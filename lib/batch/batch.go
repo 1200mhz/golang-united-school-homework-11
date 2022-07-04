@@ -29,6 +29,40 @@ func getBatch(n int64, pool int64) (res []user) {
 	var waitGroup sync.WaitGroup
 	ch := make(chan int64, pool)
 
+	var i int64
+	for i = 0; i < n; i++ {
+		waitGroup.Add(1)
+
+		ch <- i
+
+		go func() {
+			u := getOne(<-ch)
+
+			result.mu.Lock()
+			result.items = append(result.items, u)
+			result.mu.Unlock()
+
+			waitGroup.Done()
+		}()
+	}
+
+	waitGroup.Wait()
+
+	fmt.Println("RES:", result.items)
+
+	return result.items
+}
+
+func getBatch2(n int64, pool int64) (res []user) {
+	type users struct {
+		items []user
+		mu    sync.Mutex
+	}
+
+	result := &users{}
+	var waitGroup sync.WaitGroup
+	ch := make(chan int64, pool)
+
 	go func() {
 		for {
 			select {
