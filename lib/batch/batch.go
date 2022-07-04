@@ -46,8 +46,8 @@ func getBatch(n int64, pool int64) (res []user) {
 
 	var i int64
 	for i = 0; i < n; i++ {
+		waitGroup.Add(1)
 		go func(i int64) {
-			waitGroup.Add(1)
 			ch <- i
 		}(i)
 	}
